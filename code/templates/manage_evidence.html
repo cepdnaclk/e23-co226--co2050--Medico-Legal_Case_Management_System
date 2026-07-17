@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Evidence - Forensic System</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #ecf0f1; padding: 40px; margin: 0; }
+        .container { background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 1000px; margin: auto; border-top: 4px solid #2980b9; }
+        h2 { color: #2c3e50; margin-top: 0; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; }
+        
+        .layout-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 30px; margin-top: 20px; }
+        
+        .form-panel { background-color: #f8f9fa; padding: 20px; border-radius: 6px; border: 1px solid #e9ecef; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; color: #34495e; font-weight: bold; font-size: 14px; }
+        input[type="text"], input[type="date"], input[type="file"], select { width: 100%; padding: 10px; border: 1px solid #bdc3c7; border-radius: 4px; box-sizing: border-box; }
+        
+        .btn-submit { width: 100%; padding: 12px; background-color: #2980b9; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        .btn-submit:hover { background-color: #1f618d; }
+        
+        table { width: 100%; border-collapse: collapse; background-color: white; font-size: 14px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #2980b9; color: white; }
+        tr:hover { background-color: #f1f2f6; }
+        
+        .btn-download { padding: 5px 10px; background-color: #27ae60; color: white; text-decoration: none; border-radius: 3px; font-size: 12px; font-weight: bold; }
+        .btn-view { padding: 5px 10px; background-color: #8e44ad; color: white; text-decoration: none; border-radius: 3px; font-size: 12px; font-weight: bold; }
+        
+        .btn-back { display: inline-block; margin-top: 20px; color: #7f8c8d; text-decoration: none; }
+        .success { color: #27ae60; background-color: #e8f8f5; padding: 10px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #27ae60; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Evidence & Chain of Custody</h2>
+        
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            {% for message in messages %}
+              <div class="success">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <div class="layout-grid">
+            <div class="form-panel">
+                <h3 style="margin-top: 0; color: #2c3e50;">Log New Evidence</h3>
+                
+                <form method="POST" action="{{ url_for('manage_evidence') }}" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="case_id">Associated Case</label>
+                        <select id="case_id" name="case_id" required>
+                            <option value="">-- Choose Case --</option>
+                            {% for case in cases %}<option value="{{ case.caseid }}">{{ case.caseid }}</option>{% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="categoryid">Evidence Category</label>
+                        <select id="categoryid" name="categoryid" required>
+                            <option value="">-- Select Category --</option>
+                            {% for category in categories %}
+                                <option value="{{ category.categoryid }}">{{ category.categoryname }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="evidence_image">Upload Photograph (Optional)</label>
+                        <input type="file" id="evidence_image" name="evidence_image" accept="image/*">
+                    </div>
+                    <div class="form-group">
+                        <label for="lockerid">Storage Locker</label>
+                        <select id="lockerid" name="lockerid" required>
+                            <option value="">-- Select Locker --</option>
+                            {% for locker in lockers %}
+                                <option value="{{ locker.lockerid }}">{{ locker.roomname }} ({{ locker.temperaturezone }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="collected_by">Collected By</label>
+                        <select id="collected_by" name="collected_by" required>
+                            <option value="">-- Select Staff --</option>
+                            {% for person in staff %}
+                                <option value="{{ person.staffid }}">{{ person.fullname }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="received_by">Received By</label>
+                        <select id="received_by" name="received_by" required>
+                            <option value="">-- Select Staff --</option>
+                            {% for person in staff %}
+                                <option value="{{ person.staffid }}">{{ person.fullname }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="collection_date">Collection Date</label>
+                        <input type="date" id="collection_date" name="collection_date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="status">Current Status</label>
+                        <select id="status" name="status" required>
+                            <option value="Stored">Stored</option>
+                            <option value="In Lab">In Lab</option>
+                            <option value="Released">Released</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-submit">Log Evidence</button>
+                </form>
+            </div>
+
+            <div>
+                <h3 style="margin-top: 0; color: #2c3e50;">Evidence Ledger</h3>
+                <div style="max-height: 600px; overflow-y: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Case</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Media</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in evidence_list %}
+                            <tr>
+                                <td>{{ item.evidenceid }}</td>
+                                <td><strong>{{ item.caseid }}</strong></td>
+                                <td>{{ item.categoryname or 'Uncategorized' }}</td>
+                                <td>{{ item.status }}</td>
+                                <td>
+                                    {% if item.imagepath %}
+                                        <div style="display: flex; gap: 5px;">
+                                            <a href="{{ url_for('static', filename='uploads/evidence/' + item.imagepath) }}" target="_blank" class="btn-view">View</a>
+                                            <a href="{{ url_for('static', filename='uploads/evidence/' + item.imagepath) }}" download class="btn-download">↓</a>
+                                        </div>
+                                    {% else %}
+                                        <span style="color: #7f8c8d; font-size: 12px;">No Photo</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <a href="{{ url_for('dashboard') }}" class="btn-back">← Back to Dashboard</a>
+    </div>
+</body>
+</html>

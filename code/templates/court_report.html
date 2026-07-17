@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Official Court Report - CR-{{ "%05d"|format(case.caseid) }}</title>
+    <style>
+        /* --- SCREEN MODE (Dark Glassmorphism) --- */
+        :root {
+            --neon-cyan: #00f2fe;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0b1320, #1a2a3a, #112230);
+            color: #ffffff;
+            margin: 0;
+            padding: 40px;
+            min-height: 100vh;
+        }
+
+        .action-bar {
+            max-width: 900px;
+            margin: 0 auto 20px auto;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            text-decoration: none;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-back {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .btn-print {
+            background: rgba(0, 242, 254, 0.2);
+            color: var(--neon-cyan);
+            border: 1px solid var(--neon-cyan);
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.3);
+        }
+        .btn-print:hover { background: rgba(0, 242, 254, 0.4); }
+
+        /* The Document Container */
+        .document-wrapper {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            padding: 50px;
+            border-radius: 8px;
+            max-width: 800px;
+            margin: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .doc-header { text-align: center; border-bottom: 2px solid var(--glass-border); padding-bottom: 20px; margin-bottom: 30px; }
+        .doc-header h1 { margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 2px; color: var(--neon-cyan); }
+        .doc-header h3 { margin: 5px 0 0 0; font-weight: 300; font-style: italic; color: #aaa; }
+
+        .section-title { font-size: 16px; font-weight: bold; text-transform: uppercase; background: rgba(0, 242, 254, 0.1); padding: 8px 15px; border-left: 4px solid var(--neon-cyan); margin: 30px 0 15px 0; }
+        
+        .data-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px; }
+        .data-label { font-weight: bold; color: rgba(255,255,255,0.7); display: inline-block; width: 140px; }
+        .data-value { color: #fff; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+        th, td { padding: 10px; text-align: left; border: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(255,255,255,0.05); color: var(--neon-cyan); }
+
+        .signature-block { margin-top: 80px; display: flex; justify-content: space-between; }
+        .sig-line { border-top: 1px dashed rgba(255,255,255,0.5); width: 250px; text-align: center; padding-top: 8px; font-size: 12px; color: rgba(255,255,255,0.6); }
+
+        /* --- PRINT MODE (Official Physical Document) --- */
+        @media print {
+            body { background: #fff; color: #000; padding: 0; }
+            .action-bar { display: none !important; }
+            .document-wrapper { background: none; border: none; box-shadow: none; padding: 0; filter: none; max-width: 100%; margin: 0; }
+            .doc-header h1 { color: #000; font-family: 'Times New Roman', Times, serif; }
+            .doc-header h3 { color: #333; }
+            .doc-header { border-bottom: 2px double #000; }
+            .section-title { background: #f0f0f0; border-left: 4px solid #000; color: #000; -webkit-print-color-adjust: exact; }
+            .data-label, .data-value { color: #000; }
+            table, th, td { border: 1px solid #000; color: #000; }
+            th { background: #e0e0e0; -webkit-print-color-adjust: exact; }
+            .sig-line { border-top: 1px solid #000; color: #000; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="action-bar">
+        <a href="/view_cases" class="btn btn-back">← Back to Directory</a>
+        <button onclick="window.print()" class="btn btn-print">🖨️ Print to PDF / Paper</button>
+    </div>
+
+    <div class="document-wrapper">
+        <div class="doc-header">
+            <h1>Department of Forensic Medicine</h1>
+            <h3>Official Medico-Legal Report for Magistrate Court</h3>
+        </div>
+
+        <div class="section-title">1. Case Registration Information</div>
+        <div class="data-grid">
+            <div><span class="data-label">Court / Jurisdiction:</span> <span class="data-value">Magistrate's Court</span></div>
+            <div><span class="data-label">Internal Case ID:</span> <span class="data-value">CR-{{ "%05d"|format(case.caseid) }}</span></div>
+            <div><span class="data-label">Referring Police St:</span> <span class="data-value">{{ case.policestation }}</span></div>
+            <div><span class="data-label">Date of Incident:</span> <span class="data-value">{{ case.incidentdate }}</span></div>
+            <div><span class="data-label">Nature of Case:</span> <span class="data-value">{{ case.casetype }}</span></div>
+            <div><span class="data-label">Report Generated:</span> <span class="data-value">{{ current_time }}</span></div>
+        </div>
+
+        <div class="section-title">2. Victim / Patient Identification</div>
+        <div class="data-grid">
+            <div style="grid-column: span 2;"><span class="data-label">Full Name:</span> <span class="data-value">{{ patient.fullname }}</span></div>
+            <div><span class="data-label">Age:</span> <span class="data-value">{{ patient.age }} Years</span></div>
+            <div><span class="data-label">Gender:</span> <span class="data-value">{{ patient.gender }}</span></div>
+            <div style="grid-column: span 2;"><span class="data-label">Permanent Address:</span> <span class="data-value">{{ patient.address }}</span></div>
+        </div>
+
+        <div class="section-title">3. Forensic Evidence Log</div>
+        {% if evidence %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Exhibit ID</th>
+                        <th>Type of Material</th>
+                        <th>Current Location</th>
+                        <th>Chain of Custody Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in evidence %}
+                    <tr>
+                        <td>EV-{{ "%05d"|format(item.evidenceid) }}</td>
+                        <td>{{ item.evidencetype }}</td>
+                        <td>{{ item.storagelocation }}</td>
+                        <td>{{ item.status }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p style="font-style: italic; font-size: 14px; margin-top: 10px;">No physical evidence exhibits have been recorded for this specific case iteration.</p>
+        {% endif %}
+
+        <div class="section-title">4. Medical Officer's Opinion & Declaration</div>
+        <p style="font-size: 14px; line-height: 1.6; margin-top: 15px;">
+            I hereby certify that I examined the above-named individual and reviewed the associated exhibits. The findings documented within our institutional system under the aforementioned Case ID are true and accurate to the best of my medical knowledge and belief. 
+        </p>
+
+        <div class="signature-block">
+            <div>
+                <div class="sig-line">Date of Endorsement</div>
+            </div>
+            <div>
+                <div class="sig-line">
+                    <strong>{{ case.jmoname if case.jmoname else 'Assigned Medical Officer' }}</strong><br>
+                    {{ case.jmorole if case.jmorole else 'Consultant JMO' }}<br>
+                    Department of Forensic Medicine
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Management - Forensic System</title>
+    <style>
+        :root {
+            --bg: #07111f;
+            --panel: rgba(255,255,255,0.08);
+            --panel-strong: rgba(255,255,255,0.12);
+            --border: rgba(255,255,255,0.16);
+            --text: #f4f7fb;
+            --muted: #b9c2d0;
+            --accent: #6ee7f9;
+            --accent-2: #7af0b8;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            padding: 24px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text);
+            background: radial-gradient(circle at top left, #1e3557, var(--bg));
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: var(--panel);
+            backdrop-filter: blur(18px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            box-shadow: 0 20px 45px rgba(0,0,0,0.35);
+            overflow: hidden;
+        }
+        .header {
+            padding: 24px 28px 16px;
+            border-bottom: 1px solid var(--border);
+            background: linear-gradient(90deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04));
+        }
+        .header h2 { margin: 0 0 6px; font-size: 26px; }
+        .header p { margin: 0; color: var(--muted); }
+        .content { padding: 24px 28px 28px; }
+        .card {
+            background: var(--panel-strong);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .form-grid { display: grid; gap: 16px; }
+        label { display: block; margin-bottom: 7px; font-weight: 600; color: var(--text); }
+        input[type="text"], select, input[type="file"] {
+            width: 100%;
+            padding: 11px 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.08);
+            color: var(--text);
+            outline: none;
+            font-family: inherit;
+        }
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(90deg, var(--accent), #3cb2ff);
+            color: #05111d;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .btn-submit:hover { filter: brightness(1.05); }
+        .btn-back {
+            display: inline-block;
+            margin-top: 16px;
+            color: var(--muted);
+            text-decoration: none;
+        }
+        .success, .error {
+            padding: 10px 12px;
+            margin-bottom: 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.12);
+        }
+        .success { background: rgba(39,174,96,0.15); color: #7df0aa; }
+        .error { background: rgba(192,57,43,0.15); color: #ffb7b2; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+        }
+        th { color: var(--accent); }
+        a { color: var(--accent); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Document Management</h2>
+            <p>Upload and review case-linked documents securely.</p>
+        </div>
+
+        <div class="content">
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                {% for message in messages %}
+                  <div class="{% if 'Error' in message %}error{% else %}success{% endif %}">{{ message }}</div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+
+            <div class="card">
+                <form method="POST" action="{{ url_for('manage_documents') }}" enctype="multipart/form-data">
+                    <div class="form-grid">
+                        <div>
+                            <label for="case_id">Select Case</label>
+                            <select id="case_id" name="case_id" required>
+                                <option value="">-- Choose a Case --</option>
+                                {% for case in cases %}
+                                    <option value="{{ case.caseid }}">{{ case.caseid }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="document_type">Document Type</label>
+                            <input type="text" id="document_type" name="document_type" placeholder="e.g. Court Order" required>
+                        </div>
+
+                        <div>
+                            <label for="document_file">Upload File</label>
+                            <input type="file" id="document_file" name="document_file" required>
+                        </div>
+
+                        <button type="submit" class="btn-submit">Upload Document</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card">
+                <h3 style="margin-top: 0;">Uploaded Documents</h3>
+                {% if documents %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Case</th>
+                                <th>Type</th>
+                                <th>File</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for doc in documents %}
+                                <tr>
+                                    <td>{{ doc.documentid }}</td>
+                                    <td>{{ doc.caseid }}</td>
+                                    <td>{{ doc.documenttype }}</td>
+                                    <td><a href="{{ url_for('download_document', documentid=doc.documentid) }}" target="_blank">Open / Download</a></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p style="color: var(--muted);">No documents uploaded yet.</p>
+                {% endif %}
+            </div>
+
+            <a href="{{ url_for('dashboard') }}" class="btn-back">← Back to Dashboard</a>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medico-Legal Report - {{ patient.fullname }}</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            color: #333;
+            background-color: #fff;
+            margin: 0;
+            padding: 40px;
+            line-height: 1.5;
+        }
+        .report-container {
+            max-width: 800px;
+            margin: 0 auto;
+            border: 1px solid #000;
+            padding: 30px;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px double #000;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .header p {
+            margin: 5px 0 0 0;
+            font-size: 14px;
+            font-style: italic;
+        }
+        .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            text-transform: uppercase;
+            background-color: #f2f2f2;
+            padding: 5px 10px;
+            border-left: 4px solid #000;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px 20px;
+            margin-bottom: 15px;
+        }
+        .info-item {
+            font-size: 14px;
+        }
+        .info-label {
+            font-weight: bold;
+            display: inline-block;
+            width: 130px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+        table, th, td {
+            border: 1px solid #000;
+        }
+        th {
+            background-color: #f9f9f9;
+            padding: 8px;
+            text-align: left;
+            font-weight: bold;
+        }
+        td {
+            padding: 8px;
+            vertical-align: top;
+        }
+        .footer-signatures {
+            margin-top: 60px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .signature-line {
+            border-top: 1px solid #000;
+            width: 200px;
+            text-align: center;
+            padding-top: 5px;
+            font-size: 12px;
+        }
+        .no-print-zone {
+            max-width: 800px;
+            margin: 0 auto 20px auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        .btn-print { background-color: #0056b3; color: white; }
+        .btn-back { background-color: #6c757d; color: white; }
+
+        /* Print Media Adjustments */
+        @media print {
+            .no-print-zone { display: none !important; }
+            body { padding: 0; }
+            .report-container { border: none; padding: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="no-print-zone">
+        <a href="/dashboard" class="btn btn-back">← Back to Dashboard</a>
+        <button onclick="window.print()" class="btn btn-print">Print / Save as PDF</button>
+    </div>
+
+    <div class="report-container">
+        
+        <div class="header">
+            <h1>Department of Forensic Medicine</h1>
+            <p>Official Medico-Legal Patient Case Report</p>
+        </div>
+
+        <div class="section-title">1. Patient Personal Demographics</div>
+        <div class="info-grid">
+            <div class="info-item"><span class="info-label">Patient ID:</span> PT-{{ "%05d"|format(patient.patientid) }}</div>
+            <div class="info-item"><span class="info-label">Full Name:</span> {{ patient.fullname }}</div>
+            <div class="info-item"><span class="info-label">Age / Gender:</span> {{ patient.age }} Years / {{ patient.gender }}</div>
+            <div class="info-item"><span class="info-label">Contact No:</span> {{ patient.contactinfo if patient.contactinfo else 'N/A' }}</div>
+            <div class="info-item" style="grid-column: span 2;"><span class="info-label">Residential Address:</span> {{ patient.address }}</div>
+        </div>
+
+        <div class="section-title">2. Associated Medico-Legal Cases</div>
+        {% if cases %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Case ID</th>
+                        <th>Case Type</th>
+                        <th>Incident Date</th>
+                        <th>Police Station</th>
+                        <th>Handling JMO / Doctor</th>
+                        <th>Current Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for case in cases %}
+                    <tr>
+                        <td><strong>CR-{{ "%05d"|format(case.caseid) }}</strong></td>
+                        <td>{{ case.casetype }}</td>
+                        <td>{{ case.incidentdate }}</td>
+                        <td>{{ case.policestation }}</td>
+                        <td>{{ case.assignedjmo if case.assignedjmo else case.jmoname }}</td>
+                        <td>{{ case.casestatus }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p style="font-size: 14px; font-style: italic;">No active forensic or clinical legal cases registered for this patient profile.</p>
+        {% endif %}
+
+        <div class="section-title">3. Forensic Evidence Summary</div>
+        {% if evidence %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Evidence ID</th>
+                        <th>Linked Case</th>
+                        <th>Type of Material Description</th>
+                        <th>Chain of Custody Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in evidence %}
+                    <tr>
+                        <td>EV-{{ "%05d"|format(item.evidenceid) }}</td>
+                        <td>CR-{{ "%05d"|format(item.caseid) }}</td>
+                        <td>{{ item.evidencetype }}</td>
+                        <td>{{ item.status }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p style="font-size: 14px; font-style: italic;">No exhibits or chain of custody items logged for this record.</p>
+        {% endif %}
+
+        <div class="section-title">4. Institutional Sign-Off & Attestation</div>
+        <p style="font-size: 12px; margin-top: 15px;">
+            I hereby certify that the information contained within this document represents the true, factual compilation extracted directly from the secure clinical repository on this date ({{ current_time }}).
+        </p>
+
+        <div class="footer-signatures">
+            <div>
+                <div style="height: 45px;"></div>
+                <div class="signature-line">Prepared By (Staff Signature)</div>
+            </div>
+            <div>
+                <div style="height: 45px;"></div>
+                <div class="signature-line">Authorized Medical Examiner / JMO</div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forensic Database System</title>
+    <style>
+        /* Base Reset & Dark Gradient Background */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0b1320, #1a2a3a, #112230);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #ffffff;
+        }
+
+        /* Animated Background Shapes */
+        .shape {
+            position: absolute;
+            filter: blur(80px);
+            z-index: 1;
+            animation: float 10s infinite alternate ease-in-out;
+        }
+        .shape1 {
+            width: 400px; height: 400px;
+            background: #00f2fe;
+            top: -100px; left: -100px;
+            border-radius: 50%;
+        }
+        .shape2 {
+            width: 500px; height: 500px;
+            background: #4facfe;
+            bottom: -150px; right: -100px;
+            border-radius: 50%;
+            animation-delay: -5s;
+        }
+        .shape3 {
+            width: 300px; height: 300px;
+            background: #34e89e;
+            bottom: 20%; left: 20%;
+            border-radius: 50%;
+            animation-duration: 12s;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px) translateX(0px); }
+            100% { transform: translateY(50px) translateX(50px); }
+        }
+
+        /* Glassmorphism Panel */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            border-left: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+            border-radius: 24px;
+            padding: 60px 50px;
+            text-align: center;
+            z-index: 10;
+            max-width: 650px;
+            width: 90%;
+            
+            /* Panel Entrance Animation */
+            opacity: 0;
+            transform: scale(0.95);
+            animation: panelFadeIn 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes panelFadeIn {
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* --- TEXT REVEAL ANIMATIONS --- */
+        @keyframes slideUpReveal {
+            0% { opacity: 0; transform: translateY(30px); filter: blur(5px); }
+            100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+        }
+
+        @keyframes textShine {
+            0% { background-position: 0% center; }
+            100% { background-position: 200% center; }
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            
+            /* Flowing Gradient Color */
+            background: linear-gradient(to right, #ffffff, #00f2fe, #34e89e, #ffffff);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            
+            /* Staggered Animation: Slide up, then loop the shine effect */
+            opacity: 0;
+            animation: slideUpReveal 1s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.4s, 
+                       textShine 5s linear infinite 1.5s;
+        }
+
+        p {
+            font-size: 1.15rem;
+            color: rgba(255, 255, 255, 0.85);
+            margin-bottom: 45px;
+            line-height: 1.6;
+            
+            /* Staggered Animation: Delays by 0.7s so it appears after the title */
+            opacity: 0;
+            animation: slideUpReveal 1s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.7s;
+        }
+
+        /* Neon Glow Button */
+        .btn-neon {
+            display: inline-block;
+            padding: 15px 45px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #ffffff;
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            transition: all 0.4s ease;
+            backdrop-filter: blur(5px);
+            position: relative;
+            
+            /* Staggered Animation: Delays by 1.0s so it appears last */
+            opacity: 0;
+            animation: slideUpReveal 1s cubic-bezier(0.16, 1, 0.3, 1) forwards 1.0s;
+        }
+        
+        .btn-neon:hover {
+            background: rgba(0, 242, 254, 0.15);
+            border-color: #00f2fe;
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.5), 0 0 40px rgba(0, 242, 254, 0.3);
+            transform: translateY(-3px) scale(1.02);
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="shape shape1"></div>
+    <div class="shape shape2"></div>
+    <div class="shape shape3"></div>
+
+    <div class="glass-panel">
+        <h1>Forensic Database System</h1>
+        <p>A secure, integrated platform for managing medico-legal cases, autopsy findings, and maintaining the chain of custody for evidentiary analysis.</p>
+        
+        <a href="{{ url_for('login') }}" class="btn-neon">Access System</a>
+    </div>
+
+</body>
+</html>

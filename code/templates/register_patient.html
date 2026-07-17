@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Patient - Forensic System</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #ecf0f1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .form-container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 500px;
+            border-top: 4px solid #3498db;
+        }
+        h2 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #34495e;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="number"], select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+        textarea {
+            resize: vertical;
+            height: 80px;
+        }
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            background-color: #2c3e50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background 0.3s ease;
+        }
+        .btn-submit:hover {
+            background-color: #1a252f;
+        }
+        .btn-back {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: #7f8c8d;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .btn-back:hover {
+            color: #34495e;
+            text-decoration: underline;
+        }
+        .success {
+            color: #27ae60;
+            background-color: #e8f8f5;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+            margin-bottom: 20px;
+            border: 1px solid #27ae60;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="form-container">
+        <h2>Register New Patient</h2>
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            {% for message in messages %}
+              <div class="success">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('register_patient') }}">
+            <div class="form-group">
+                <label for="full_name">Full Name</label>
+                <input type="text" id="full_name" name="full_name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="date_of_birth">Date of Birth</label>
+                <input type="date" id="date_of_birth" name="date_of_birth">
+            </div>
+
+            <div class="form-group">
+                <label for="gender">Gender</label>
+                <select id="gender" name="gender">
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                    <option value="Unknown">Unknown</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="contact_no">Contact Number</label>
+                <input type="text" id="contact_no" name="contact_no">
+            </div>
+
+            <div class="form-group">
+                <label for="address">Address</label>
+                <textarea id="address" name="address"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="next_of_kin_name">Next of Kin Name</label>
+                <input type="text" id="next_of_kin_name" name="next_of_kin_name">
+            </div>
+
+            <div class="form-group">
+                <label for="next_of_kin_relationship">Next of Kin Relationship</label>
+                <input type="text" id="next_of_kin_relationship" name="next_of_kin_relationship">
+            </div>
+
+            <div class="form-group">
+                <label for="next_of_kin_contact">Next of Kin Contact</label>
+                <input type="text" id="next_of_kin_contact" name="next_of_kin_contact">
+            </div>
+
+            <div class="form-group">
+                <label for="condition_details">Medical History</label>
+                <textarea id="condition_details" name="condition_details" placeholder="Enter medical history or conditions"></textarea>
+            </div>
+
+            <button type="submit" class="btn-submit">Register Patient</button>
+        </form>
+        
+        <a href="{{ url_for('dashboard') }}" class="btn-back">← Back to Dashboard</a>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Staff Role - Forensic System</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #ecf0f1; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        .form-container { background-color: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; border-top: 5px solid #f39c12; }
+        h2 { color: #2c3e50; margin-bottom: 5px; text-align: center; }
+        p.subtitle { text-align: center; color: #7f8c8d; margin-bottom: 25px; }
+        
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: #34495e; font-weight: bold; }
+        select { width: 100%; padding: 10px; border: 1px solid #bdc3c7; border-radius: 4px; box-sizing: border-box; }
+        
+        .btn-submit { width: 100%; padding: 12px; background-color: #f39c12; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; font-weight: bold; }
+        .btn-submit:hover { background-color: #d68910; }
+        .btn-back { display: block; text-align: center; margin-top: 15px; color: #7f8c8d; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+    <div class="form-container">
+        <h2>Modify Staff Role</h2>
+        <p class="subtitle">Updating profile for: <strong>{{ staff.fullname }}</strong></p>
+
+        <form method="POST" action="{{ url_for('edit_staff', staff_id=staff.staffid) }}">
+            <div class="form-group">
+                <label for="deptid">Department</label>
+                <select id="deptid" name="deptid" required>
+                    {% for department in departments %}
+                        <option value="{{ department.deptid }}" {% if staff.deptid == department.deptid %}selected{% endif %}>{{ department.deptname }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="roleid">Role</label>
+                <select id="roleid" name="roleid" required>
+                    {% for role in roles %}
+                        <option value="{{ role.roleid }}" {% if staff.roleid == role.roleid %}selected{% endif %}>{{ role.rolename }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button type="submit" class="btn-submit">Confirm Role Change</button>
+        </form>
+        
+        <a href="{{ url_for('manage_staff') }}" class="btn-back">← Cancel & Go Back</a>
+    </div>
+
+</body>
+</html>

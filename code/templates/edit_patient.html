@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Patient - Forensic System</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #ecf0f1; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        .form-container { background-color: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 500px; border-top: 4px solid #f39c12; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #bdc3c7; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background-color: #f39c12; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>Edit Patient Profile</h2>
+        <form method="POST" action="{{ url_for('edit_patient', patient_id=patient.patientid) }}">
+            <div class="form-group"><label>Full Name</label><input type="text" name="full_name" value="{{ patient.fullname }}" required></div>
+            <div class="form-group"><label>Age</label><input type="number" name="age" value="{{ patient.age }}"></div>
+            <div class="form-group">
+                <label>Gender</label>
+                <select name="gender">
+                    <option value="Male" {% if patient.gender == 'Male' %}selected{% endif %}>Male</option>
+                    <option value="Female" {% if patient.gender == 'Female' %}selected{% endif %}>Female</option>
+                    <option value="Other" {% if patient.gender == 'Other' %}selected{% endif %}>Other</option>
+                </select>
+            </div>
+            <div class="form-group"><label>Contact Number</label><input type="text" name="contact_info" value="{{ patient.contactinfo }}"></div>
+            <div class="form-group"><label>Address</label><textarea name="address">{{ patient.address }}</textarea></div>
+            <button type="submit">Update Record</button>
+        </form>
+        <a href="{{ url_for('manage_patients') }}" style="display: block; text-align: center; margin-top: 15px; color: #7f8c8d; text-decoration: none;">Cancel</a>
+    </div>
+</body>
+</html>

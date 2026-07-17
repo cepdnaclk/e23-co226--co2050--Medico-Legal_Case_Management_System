@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Findings - Forensic System</title>
+    <style>
+        :root {
+            --bg: #07111f;
+            --panel: rgba(255,255,255,0.08);
+            --panel-strong: rgba(255,255,255,0.12);
+            --border: rgba(255,255,255,0.16);
+            --text: #f4f7fb;
+            --muted: #b9c2d0;
+            --accent: #6ee7f9;
+            --accent-2: #ff7b7b;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text);
+            background: radial-gradient(circle at top left, #1e3557, var(--bg));
+        }
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--panel);
+            backdrop-filter: blur(18px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            box-shadow: 0 20px 45px rgba(0,0,0,0.35);
+            overflow: hidden;
+        }
+        .header {
+            padding: 24px 28px 16px;
+            border-bottom: 1px solid var(--border);
+            background: linear-gradient(90deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04));
+        }
+        .header h2 { margin: 0 0 6px; font-size: 26px; }
+        .header p { margin: 0; color: var(--muted); }
+        .tabs {
+            display: flex;
+            background: rgba(255,255,255,0.04);
+            border-bottom: 1px solid var(--border);
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 15px 16px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--muted);
+            transition: all 0.2s ease;
+        }
+        .tab-btn.active {
+            color: var(--text);
+            background: var(--panel-strong);
+            box-shadow: inset 0 -2px 0 var(--accent);
+        }
+        .tab-content {
+            display: none;
+            padding: 24px 28px 28px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; margin-bottom: 7px; font-weight: 600; color: var(--text); }
+        input[type="text"], input[type="date"], select, textarea {
+            width: 100%;
+            padding: 11px 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.08);
+            color: var(--text);
+            outline: none;
+            font-family: inherit;
+        }
+        textarea { min-height: 120px; resize: vertical; }
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(90deg, var(--accent), #3cb2ff);
+            color: #05111d;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .btn-submit:hover { filter: brightness(1.05); }
+        .btn-back {
+            display: inline-block;
+            margin-top: 16px;
+            color: var(--muted);
+            text-decoration: none;
+        }
+        .success {
+            padding: 10px 12px;
+            margin: 20px 28px 0;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(39,174,96,0.15);
+            color: #7df0aa;
+        }
+        .error {
+            padding: 10px 12px;
+            margin: 20px 28px 0;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(192,57,43,0.15);
+            color: #ffb7b2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Medical Findings Dashboard</h2>
+            <p>Clinical examinations and postmortem reports in one sleek workspace.</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" type="button" onclick="openTab('clinical')">Clinical Examination</button>
+            <button class="tab-btn" type="button" onclick="openTab('postmortem')">Postmortem</button>
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            {% for message in messages %}
+              <div class="{% if 'Error' in message %}error{% else %}success{% endif %}">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <div id="clinical" class="tab-content active">
+            <form method="POST" action="{{ url_for('medical_findings') }}">
+                <input type="hidden" name="submission_type" value="clinical">
+                <div class="form-group">
+                    <label for="clinical_case_id">Select Case</label>
+                    <select id="clinical_case_id" name="case_id" required>
+                        <option value="">-- Choose a Case --</option>
+                        {% for case in cases %}
+                            <option value="{{ case.caseid }}">{{ case.caseid }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="clinical_doctor_id">Examining Doctor</label>
+                    <select id="clinical_doctor_id" name="doctor_id" required>
+                        <option value="">-- Choose a Doctor --</option>
+                        {% for doctor in doctors %}
+                            <option value="{{ doctor.staffid }}">{{ doctor.fullname }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="examination_date">Examination Date</label>
+                    <input type="date" id="examination_date" name="examination_date" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="clinical_findings">Clinical Findings</label>
+                    <textarea id="clinical_findings" name="findings" placeholder="Enter clinical observations and examination findings" required></textarea>
+                </div>
+
+                <button type="submit" class="btn-submit">Save Clinical Examination</button>
+            </form>
+        </div>
+
+        <div id="postmortem" class="tab-content">
+            <form method="POST" action="{{ url_for('medical_findings') }}">
+                <input type="hidden" name="submission_type" value="postmortem">
+                <div class="form-group">
+                    <label for="postmortem_case_id">Select Case</label>
+                    <select id="postmortem_case_id" name="case_id" required>
+                        <option value="">-- Choose a Case --</option>
+                        {% for case in cases %}
+                            <option value="{{ case.caseid }}">{{ case.caseid }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="postmortem_doctor_id">Examining Doctor / JMO</label>
+                    <select id="postmortem_doctor_id" name="doctor_id" required>
+                        <option value="">-- Choose a Doctor --</option>
+                        {% for doctor in doctors %}
+                            <option value="{{ doctor.staffid }}">{{ doctor.fullname }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="date_of_exam">Examination Date</label>
+                    <input type="date" id="date_of_exam" name="date_of_exam" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="icd10code">Cause of Death</label>
+                    <select id="icd10code" name="icd10code" required>
+                        <option value="">-- Select a Cause of Death --</option>
+                        {% for code in cause_of_death_codes %}
+                            <option value="{{ code.icd10code }}">{{ code.icd10code }} - {{ code.description }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="postmortem_findings">Postmortem Findings</label>
+                    <textarea id="postmortem_findings" name="findings" placeholder="Enter postmortem findings and observations" required></textarea>
+                </div>
+
+                <button type="submit" class="btn-submit">Save Postmortem Report</button>
+            </form>
+        </div>
+
+        <a href="{{ url_for('dashboard') }}" class="btn-back">← Back to Dashboard</a>
+    </div>
+
+    <script>
+        function openTab(tabName) {
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(function(tab) {
+                tab.classList.remove('active');
+            });
+
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(function(button) {
+                button.classList.remove('active');
+            });
+
+            document.getElementById(tabName).classList.add('active');
+            document.querySelector('.tab-btn[onclick="openTab(\'' + tabName + '\')"]')?.classList.add('active');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Patients - Forensic System</title>
+    <style>
+        :root {
+            --neon-cyan: #00f2fe;
+            --neon-green: #34e89e;
+            --neon-red: #ff7675;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0b1320, #1a2a3a, #112230);
+            color: #ffffff;
+            margin: 0;
+            padding: 40px;
+            min-height: 100vh;
+        }
+
+        /* Glassmorphism Container */
+        .container {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-top: 3px solid var(--neon-cyan);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            max-width: 1100px;
+            margin: auto;
+        }
+
+        h2 {
+            margin-top: 0;
+            font-weight: 300;
+            font-size: 2rem;
+            letter-spacing: 1px;
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+
+        /* Premium Glass Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        th {
+            background-color: rgba(0, 242, 254, 0.05);
+            color: var(--neon-cyan);
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-size: 12px;
+        }
+        tr:hover {
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+
+        /* Neon Buttons */
+        .btn-edit {
+            padding: 8px 15px;
+            background: rgba(241, 196, 15, 0.1);
+            color: #f1c40f;
+            border: 1px solid #f1c40f;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            transition: 0.3s;
+            margin-right: 10px;
+        }
+        .btn-edit:hover {
+            background: rgba(241, 196, 15, 0.3);
+            box-shadow: 0 0 10px rgba(241, 196, 15, 0.4);
+        }
+
+        .btn-action-report {
+            padding: 8px 15px;
+            background: rgba(0, 242, 254, 0.1);
+            color: var(--neon-cyan);
+            border: 1px solid var(--neon-cyan);
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .btn-action-report:hover {
+            background: rgba(0, 242, 254, 0.3);
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.4);
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 30px;
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            transition: 0.3s;
+        }
+        .back-link:hover {
+            color: var(--neon-cyan);
+            padding-left: 5px;
+        }
+        
+        .alert-success {
+            background: rgba(52, 232, 158, 0.1);
+            color: var(--neon-green);
+            border: 1px solid var(--neon-green);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Patient Directory</h2>
+        
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert-success">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Age</th>
+                    <th>Gender</th>
+                    <th>Contact</th>
+                    <th>Action Controls</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in patients %}
+                <tr>
+                    <td>PT-{{ "%05d"|format(p.patientid) }}</td>
+                    <td style="font-weight: bold;">{{ p.fullname }}</td>
+                    <td>{{ p.age }}</td>
+                    <td>{{ p.gender }}</td>
+                    <td>{{ p.contactinfo }}</td>
+                    
+                    <td>
+                        <a href="{{ url_for('edit_patient', patient_id=p.patientid) }}" class="btn-edit">Edit File</a>
+                        
+                        <a href="{{ url_for('patient_report', patient_id=p.patientid) }}" class="btn-action-report" target="_blank">
+                            Generate Report
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <a href="{{ url_for('dashboard') }}" class="back-link">← Return to Dashboard</a>
+    </div>
+</body>
+</html>

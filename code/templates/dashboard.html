@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Forensic System</title>
+    <style>
+        :root {
+            --neon-cyan: #00f2fe;
+            --neon-green: #34e89e;
+            --neon-red: #ff7675;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-main: #ffffff;
+            --text-muted: rgba(255, 255, 255, 0.6);
+        }
+
+        body, html {
+            margin: 0; padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex; height: 100vh;
+            background: linear-gradient(135deg, #0b1320, #1a2a3a, #112230);
+            color: var(--text-main);
+            overflow: hidden;
+        }
+
+        /* Animated Background Orbs for Depth */
+        .bg-orb {
+            position: absolute; border-radius: 50%; filter: blur(80px); z-index: -1;
+            animation: float 12s infinite alternate ease-in-out;
+        }
+        .orb-1 { width: 400px; height: 400px; background: rgba(0, 242, 254, 0.15); top: -100px; left: -100px; }
+        .orb-2 { width: 500px; height: 500px; background: rgba(52, 232, 158, 0.1); bottom: -150px; right: -100px; animation-delay: -5s; }
+
+        @keyframes float {
+            0% { transform: translateY(0px) translateX(0px); }
+            100% { transform: translateY(40px) translateX(40px); }
+        }
+
+        /* Glass Sidebar */
+        .sidebar {
+            width: 270px; display: flex; flex-direction: column;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-right: 1px solid var(--glass-border);
+            box-shadow: 5px 0 30px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+        .sidebar-header {
+            padding: 25px 20px; text-align: center; font-weight: 800; font-size: 1.3rem;
+            border-bottom: 1px solid var(--glass-border);
+            background: linear-gradient(to right, #ffffff, var(--neon-cyan));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            letter-spacing: 2px; text-transform: uppercase;
+        }
+        .nav-links { list-style: none; padding: 0; margin: 0; flex-grow: 1; overflow-y: auto; }
+        .nav-links li a {
+            display: flex; align-items: center; padding: 16px 25px; 
+            color: rgba(255,255,255,0.8); text-decoration: none; 
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            transition: all 0.3s ease; font-size: 14px; position: relative;
+        }
+        
+        /* Neon Hover Effect */
+        .nav-links li a:hover {
+            background: rgba(0, 242, 254, 0.1);
+            color: var(--neon-cyan);
+            padding-left: 32px;
+            text-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+        }
+        .nav-links li a::before {
+            content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 3px;
+            background: var(--neon-cyan); transform: scaleY(0); transition: transform 0.3s ease;
+        }
+        .nav-links li a:hover::before { transform: scaleY(1); box-shadow: 0 0 15px var(--neon-cyan); }
+
+        .logout-btn {
+            background: rgba(255, 118, 117, 0.05); text-align: center; padding: 18px;
+            text-decoration: none; color: var(--neon-red); font-weight: bold;
+            transition: all 0.3s; border-top: 1px solid var(--glass-border);
+            letter-spacing: 1px;
+        }
+        .logout-btn:hover {
+            background: rgba(255, 118, 117, 0.2);
+            box-shadow: 0 0 20px rgba(255, 118, 117, 0.4);
+            text-shadow: 0 0 8px var(--neon-red);
+        }
+
+        /* Main Content */
+        .main-content { flex-grow: 1; padding: 40px 50px; overflow-y: auto; position: relative; }
+        
+        /* --- NEW: Dashboard Grid Layout --- */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2.5fr 1fr; /* 70% left column, 30% right column */
+            gap: 30px;
+            margin-top: 10px;
+            align-items: start;
+        }
+
+        /* Adjust card container for the new grid */
+        .card-container { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+            gap: 25px; 
+        }
+
+        /* Glass Side Panel (Right Side) */
+        .side-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            border-top: 3px solid var(--neon-cyan);
+        }
+        
+        .side-panel h4 {
+            margin-top: 0; margin-bottom: 20px;
+            color: var(--text-main); font-size: 1.2rem;
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 10px; font-weight: 400;
+        }
+
+        /* Glowing Activity List */
+        .activity-list { list-style: none; padding: 0; margin: 0; }
+        .activity-list li {
+            position: relative; padding-left: 25px; margin-bottom: 18px;
+            color: var(--text-muted); font-size: 0.95rem; line-height: 1.4;
+        }
+        .activity-list li strong { color: var(--text-main); display: block; font-size: 1rem; margin-bottom: 3px; }
+        .activity-list li span { font-size: 0.8rem; color: var(--neon-cyan); }
+        
+        /* Neon glowing bullet points */
+        .activity-list li::before {
+            content: ''; position: absolute; left: 0; top: 5px;
+            width: 10px; height: 10px; border-radius: 50%;
+            background: var(--neon-cyan);
+            box-shadow: 0 0 10px var(--neon-cyan);
+        }
+        /* Make the second bullet green, third red for variety */
+        .activity-list li:nth-child(2)::before { background: var(--neon-green); box-shadow: 0 0 10px var(--neon-green); }
+        .activity-list li:nth-child(3)::before { background: var(--neon-red); box-shadow: 0 0 10px var(--neon-red); }
+
+        /* Header & Live Clock Layout */
+        .top-bar { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-start; /* Aligns to top when stacked */
+            margin-bottom: 50px; 
+            flex-wrap: wrap; /* CRITICAL FIX: Forces elements to stack if they run out of space */
+            gap: 25px; /* Adds a safety buffer between the text and clock */
+        }
+        .header {
+            flex: 1 1 300px; /* Allows header to flexibly resize */
+            min-width: 250px;
+        }
+        .header h1 { 
+            margin: 0; 
+            font-size: 2.5rem; 
+            font-weight: 300; 
+            letter-spacing: 1px; 
+            word-wrap: break-word; /* Prevents long usernames from overflowing */
+        }
+        .header p { 
+            color: var(--neon-cyan); 
+            margin-top: 8px; 
+            font-size: 1.1rem; 
+            text-shadow: 0 0 10px rgba(0, 242, 254, 0.3); 
+        }
+        
+        /* Glass Clock Widget */
+        .clock-widget {
+            background: var(--glass-bg); backdrop-filter: blur(15px); border: 1px solid var(--glass-border);
+            padding: 15px 30px; border-radius: 12px; text-align: right;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            border-right: 3px solid var(--neon-green);
+        }
+        .time { font-size: 2rem; font-weight: bold; color: #fff; text-shadow: 0 0 15px rgba(255, 255, 255, 0.5); margin: 0; }
+        .date { font-size: 0.9rem; color: var(--text-muted); margin-top: 5px; text-transform: uppercase; letter-spacing: 2px; }
+
+        /* Glass Stats Cards */
+        .card-container { display: flex; gap: 30px; }
+        .stat-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            padding: 35px 25px; border-radius: 16px; flex: 1; text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative; overflow: hidden;
+        }
+        .stat-card::after {
+            content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0) 100%);
+            transform: skewX(-25deg); transition: 0.5s;
+        }
+        .stat-card:hover::after { left: 125%; }
+        .stat-card:hover { transform: translateY(-10px); }
+        
+        /* Card Specific Neon Accents */
+        .card-cases { border-top: 3px solid var(--neon-cyan); }
+        .card-cases:hover { box-shadow: 0 10px 40px rgba(0, 242, 254, 0.15); border-top-color: #fff; }
+        .card-status { border-top: 3px solid var(--neon-green); }
+        .card-status:hover { box-shadow: 0 10px 40px rgba(52, 232, 158, 0.15); border-top-color: #fff; }
+
+        .stat-card h3 { margin: 0; font-size: 3.5rem; color: #ffffff; font-weight: 300; text-shadow: 0 0 20px rgba(255,255,255,0.3); }
+        .stat-card p { margin: 15px 0 0; color: var(--text-muted); font-weight: bold; text-transform: uppercase; font-size: 13px; letter-spacing: 2px; }
+    </style>
+</head>
+<body>
+
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+
+    <div class="sidebar">
+        <div class="sidebar-header">Forensic System</div>
+        <ul class="nav-links">
+            <li><a href="/dashboard">Dashboard Home</a></li>
+            
+            {% if role == 'Admin' or role == 'Clerical' %}
+                <li><a href="/register_patient">Patient Registration</a></li>
+                <li><a href="/manage_patients">Manage & Edit Patients</a></li>
+            {% endif %}
+            
+            {% if role == 'Doctor' or role == 'Admin' or role == 'JMO' %}
+                <li><a href="/create_case">Open New Case</a></li>
+                <li><a href="/view_cases">Search & View Cases</a></li>
+                <li><a href="/postmortem">Postmortem Findings</a></li>
+                <li><a href="{{ url_for('medical_findings') }}">🏥 Medical Findings Portal</a></li>
+                
+                <li style="margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.05);">
+                    <a href="/reports" style="color: var(--neon-cyan);">📊 System Analytics</a>
+                </li>
+            {% endif %}
+
+            {% if role == 'Lab' or role == 'Admin' or role == 'Doctor' or role == 'JMO' %}
+                <li><a href="/manage_evidence">Manage Evidence</a></li>
+            {% endif %}
+
+            {% if role == 'Lab' or role == 'Admin' %}
+                 <li><a href="/lab_test">Laboratory Tests</a></li>
+            {% endif %}
+
+            {% if role == 'Admin' or role == 'Doctor' or role == 'JMO' or role == 'Lab' %}
+                <li><a href="{{ url_for('manage_documents') }}">📄 Document Management</a></li>
+            {% endif %}
+
+            {% if role == 'Admin' %}
+                <li style="margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.05);">
+                    <a href="/manage_staff" style="color: #f1c40f;">⚙️ System Administration</a>
+                    <a href="/audit_logs" style="color: var(--neon-red);">🛡️ Security Audit Logs</a>
+                </li>
+            {% endif %}
+        </ul>
+        <a href="{{ url_for('logout') }}" class="logout-btn">Secure Logout</a>
+    </div>
+
+    <div class="main-content">
+        
+        <div class="top-bar">
+            <div class="header">
+                <h1>Welcome, {{ username }}</h1>
+                <p>Access Clearance: <strong>{{ role }}</strong></p>
+            </div>
+            
+            <div class="clock-widget">
+                <div class="time" id="live-time">00:00:00</div>
+                <div class="date" id="live-date">Loading date...</div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            
+            <div class="main-column">
+                <div class="card-container">
+                    <div class="stat-card card-cases">
+                        <h3>{{ open_cases }}</h3>
+                        <p>Active Cases System-Wide</p>
+                    </div>
+                    
+                    <div class="stat-card" style="border-top: 3px solid #f1c40f;">
+                        <h3 style="color: #f1c40f; text-shadow: 0 0 20px rgba(241, 196, 15, 0.4);">3</h3>
+                        <p>Pending Actions / Reports</p>
+                    </div>
+
+                    <div class="stat-card card-status">
+                        <h3 style="color: var(--neon-green); text-shadow: 0 0 20px rgba(52, 232, 158, 0.4);">Online</h3>
+                        <p>Database Connection</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="side-panel">
+                <h4>Recent System Activity</h4>
+                <ul class="activity-list">
+                    {% for activity in recent_activity %}
+                    <li>
+                        <strong>{{ activity.action }}</strong>
+                        {% if activity.fullname %}
+                        User <i>{{ activity.fullname }}</i> performed this action.
+                        {% else %}
+                        System activity recorded.
+                        {% endif %}
+                        <br><span>{{ activity.logtime }}</span>
+                    </li>
+                    {% else %}
+                    <li>
+                        <strong>No recent activity</strong>
+                        <br><span>No audit log entries available yet.</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            
+        </div>
+    </div>
+
+    <script>
+        function updateClock() {
+            const now = new Date();
+            
+            // Format Time (HH:MM:SS AM/PM)
+            let hours = now.getHours();
+            let minutes = now.getMinutes();
+            let seconds = now.getSeconds();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            
+            hours = hours % 12;
+            hours = hours ? hours : 12; // the hour '0' should be '12'
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            seconds = seconds < 10 ? '0' + seconds : seconds;
+            
+            const timeString = `${hours}:${minutes}:${seconds} ${ampm}`;
+            
+            // Format Date (Day, Month Date, Year)
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const dateString = now.toLocaleDateString('en-US', options);
+            
+            document.getElementById('live-time').innerText = timeString;
+            document.getElementById('live-date').innerText = dateString;
+        }
+
+        // Initialize clock and update every second
+        updateClock();
+        setInterval(updateClock, 1000);
+    </script>
+</body>
+</html>

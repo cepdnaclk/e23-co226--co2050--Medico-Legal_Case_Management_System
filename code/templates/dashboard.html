@@ -219,7 +219,7 @@
         <ul class="nav-links">
             <li><a href="/dashboard">Dashboard Home</a></li>
             
-            {% if role == 'Admin' or role == 'Clerical' %}
+            {% if role in ['Admin', 'Clerical', 'Doctor', 'JMO'] %}
                 <li><a href="/register_patient">Patient Registration</a></li>
                 <li><a href="/manage_patients">Manage & Edit Patients</a></li>
             {% endif %}
@@ -227,8 +227,10 @@
             {% if role == 'Doctor' or role == 'Admin' or role == 'JMO' %}
                 <li><a href="/create_case">Open New Case</a></li>
                 <li><a href="/view_cases">Search & View Cases</a></li>
+                <li><a href="/mlef_form">Complete MLEF Form</a></li>
                 <li><a href="/postmortem">Postmortem Findings</a></li>
                 <li><a href="{{ url_for('medical_findings') }}">🏥 Medical Findings Portal</a></li>
+                <li><a href="/doctor_dashboard">Doctor Dashboard</a></li>
                 
                 <li style="margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.05);">
                     <a href="/reports" style="color: var(--neon-cyan);">📊 System Analytics</a>

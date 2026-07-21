@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Medico-Legal Examination Form (MLEF)</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mlef_style.css') }}">
+</head>
+<body>
+
+<div class="paper-container">
+    <div class="mlef-header">
+        <h2>Medico - Legal Examination Form (MLEF)</h2>
+    </div>
+
+    <div class="mlef-grid">
+        
+        <!-- ================= LEFT COLUMN ================= -->
+        <div class="col-left">
+            <div class="box section-title">MEDICAL OFFICER'S NOTE</div>
+            <div class="box tall-box">
+                <label>Date, Time and Place of Examination:</label>
+                <textarea></textarea>
+            </div>
+            <div class="box split-box">
+                <div><label>Date of Birth:</label><input type="date"></div>
+                <div><label>Age:</label><input type="text"></div>
+            </div>
+            <div class="box signature-box">
+                <label>Consent of the examinee:</label>
+                <div class="signature-line"></div>
+            </div>
+            <div class="box">
+                <label>Identification (N.I.C. No. / Passport No.):</label>
+                <input type="text">
+            </div>
+            <div class="box thumb-box">
+                <label>Thumb imprint</label>
+                <div class="thumb-flex">
+                    <div class="thumb-pad">Left</div>
+                    <div class="thumb-pad">Right</div>
+                </div>
+            </div>
+            <div class="box signature-box">
+                <div class="signature-line">Signature of Doctor</div>
+            </div>
+        </div>
+
+        <!-- ================= MIDDLE COLUMN ================= -->
+        <div class="col-mid">
+            <div class="part-header">Part A (1-8) To be filled by Police Officer issuing MLEF</div>
+            <div class="box-grid-2">
+                <div class="box"><label>1. Police Station:</label><input type="text"></div>
+                <div class="box"><label>2. Date of Issue:</label><input type="date"></div>
+                <div class="box"><label>3. No:</label><input type="text"></div>
+            </div>
+            <div class="box"><label>4. Full Name and Address of the examinee:</label><input type="text"></div>
+            <div class="box-grid-3">
+                <div class="box span-2"><label>7. Reason for referring for examination:</label><input type="text"></div>
+                <div class="box"><label>5. Sex:</label><input type="text" style="width: 30px;"> <label>6. Age:</label><input type="text" style="width: 30px;"></div>
+            </div>
+            
+            <div class="part-header" style="margin-top: 10px;">Part B (9-22) To be filled by Medical Officer</div>
+            <div class="box"><label>9. Produced by:</label><input type="text"></div>
+            
+            <!-- Checkbox Matrix for Section 13 -->
+            <div class="box mt-5">
+                <label>13. Nature of the bodily harm:</label>
+                <div class="checkbox-matrix">
+                    <label><input type="checkbox"> Contusion</label>
+                    <label><input type="checkbox"> Fracture</label>
+                    <label><input type="checkbox"> Stab</label>
+                    <label><input type="checkbox"> Cut</label>
+                    <label><input type="checkbox"> Dislocation</label>
+                    <label><input type="checkbox"> Burns</label>
+                    <label><input type="checkbox"> Laceration</label>
+                    <label><input type="checkbox"> Firearm inj.</label>
+                    <label><input type="checkbox"> None</label>
+                    <label><input type="checkbox"> Bite</label>
+                    <label><input type="checkbox"> Explosive inj.</label>
+                </div>
+                <label class="mt-5">Internal Injuries:</label><input type="text" style="width: 100%;">
+            </div>
+
+            <!-- Checkbox Matrix for Section 14 -->
+            <div class="box mt-5">
+                <label>14. Nature of Causative Weapon:</label>
+                <div class="checkbox-matrix">
+                    <label><input type="checkbox"> Blunt</label>
+                    <label><input type="checkbox"> Sharp</label>
+                    <label><input type="checkbox"> Firearm</label>
+                    <label><input type="checkbox"> Explosive devices</label>
+                    <label><input type="checkbox"> Others</label>
+                </div>
+            </div>
+
+            <div class="box mt-5">
+                <label>15. Category of Hurt:</label>
+                <div class="checkbox-matrix">
+                    <label><input type="checkbox"> Non-grievous</label>
+                    <label><input type="checkbox"> Grievous</label>
+                    <label><input type="checkbox"> Fatal in ordinary course of nature</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= RIGHT COLUMN (DRAWING) ================= -->
+        <div class="col-right">
+            <div class="drawing-tools">
+                <button type="button" id="clearBtn">Clear Drawing</button>
+                <button type="button" id="saveDrawingBtn">Save Image</button>
+            </div>
+            <!-- The canvas where the doctor draws. 
+                 Replace the background-image in CSS with your actual anatomical diagram -->
+            <canvas id="anatomicalCanvas" width="400" height="800"></canvas>
+            <div class="action-panel">
+                <button type="button" id="saveFormBtn">Save Form</button>
+                <button type="button" id="resetBtn">Reset</button>
+                <button type="button" id="discardBtn">Discard</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/mlef_drawing.js') }}"></script>
+</body>
+</html>

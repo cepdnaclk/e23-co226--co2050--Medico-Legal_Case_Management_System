@@ -1,0 +1,95 @@
+* { box-sizing: border-box; font-family: Arial, sans-serif; }
+body { background-color: #f0f2f5; padding: 20px; display: flex; justify-content: center; }
+
+/* The main paper wrapper */
+.paper-container {
+    background-color: white;
+    width: 1200px;
+    padding: 20px 40px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+}
+
+.mlef-header h2 { text-align: left; font-size: 24px; border-bottom: 2px solid black; padding-bottom: 10px; }
+
+/* 3-Column Grid matching the form */
+.mlef-grid {
+    display: grid;
+    grid-template-columns: 250px 1fr 450px;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+/* Form Boxes & Inputs */
+.box {
+    border: 1px solid black;
+    padding: 6px;
+    font-size: 11px;
+    margin-bottom: -1px; /* Collapses double borders */
+}
+.box label { font-weight: bold; }
+input[type="text"], input[type="date"], textarea {
+    width: 100%; border: none; border-bottom: 1px dotted black; 
+    outline: none; font-size: 12px; margin-top: 4px;
+}
+textarea { resize: vertical; min-height: 50px; }
+
+/* Specific Column Styles */
+.section-title { background: #eee; text-align: center; font-weight: bold; }
+.tall-box { height: 120px; }
+.split-box { display: flex; justify-content: space-between; }
+.split-box div { width: 48%; }
+.part-header { text-align: center; font-weight: bold; font-size: 12px; background: #ddd; border: 1px solid black; padding: 4px; }
+.box-grid-2 { display: grid; grid-template-columns: 1fr 1fr 1fr; }
+.box-grid-3 { display: grid; grid-template-columns: 2fr 1fr; }
+
+/* Thumb Imprints */
+.thumb-flex { display: flex; justify-content: space-around; margin-top: 10px; }
+.thumb-pad { width: 70px; height: 90px; border: 1px solid black; text-align: center; font-size: 10px; color: gray; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 5px; }
+
+/* Signature Lines */
+.signature-box { height: 80px; position: relative; }
+.signature-line { position: absolute; bottom: 10px; left: 10px; right: 10px; border-top: 1px dashed black; text-align: center; padding-top: 2px; font-size: 10px; }
+
+/* Checkboxes */
+.checkbox-matrix { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 5px; }
+.checkbox-matrix label { font-weight: normal; font-size: 11px; display: flex; align-items: center; }
+.checkbox-matrix input { margin-right: 5px; }
+.mt-5 { margin-top: 5px; }
+
+/* Canvas Area */
+.col-right { display: flex; flex-direction: column; align-items: center; border: 1px solid black; background: #fafafa; padding: 10px; }
+.drawing-tools { margin-bottom: 10px; width: 100%; display: flex; justify-content: space-between; }
+.drawing-tools button { padding: 5px 10px; cursor: pointer; border: 1px solid black; background: #eee; }
+.action-panel {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+    width: 100%;
+    gap: 10px;
+}
+.action-panel button {
+    flex: 1;
+    padding: 8px 10px;
+    background: #d1e7dd;
+    border: 1px solid #9fc5a6;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+.action-panel button:hover {
+    background-color: #c7dace;
+    transform: translateY(-1px);
+}
+.action-panel button#discardBtn {
+    background: #ffe5e5;
+    border-color: #f5a9a9;
+}
+canvas {
+    border: 1px solid #ccc;
+    background-color: white;
+    cursor: crosshair;
+    /* You must place your anatomical image in your static/img folder */
+    background-image: url('../img/body_map_placeholder.png'); 
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}

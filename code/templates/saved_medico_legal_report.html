@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Saved Medico-Legal Report</title>
+    <style>
+        :root {
+            font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            color: #111827;
+            background: #f8fafc;
+        }
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+        }
+        .page-frame {
+            width: 100%;
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+        .report-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 24px;
+            box-shadow: 0 18px 50px rgba(15, 23, 42, 0.08);
+            padding: 32px;
+        }
+        .report-title {
+            margin: 0 0 10px;
+            font-size: 2rem;
+            letter-spacing: -0.03em;
+        }
+        .report-date {
+            margin: 0 0 24px;
+            color: #475569;
+            font-size: 1rem;
+        }
+        .drawing-frame {
+            display: grid;
+            gap: 20px;
+        }
+        .drawing-frame img {
+            width: 100%;
+            height: auto;
+            border-radius: 18px;
+            border: 1px solid #dbeafe;
+            background: #f8fafc;
+        }
+        .note {
+            margin-top: 20px;
+            color: #64748b;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        @media (max-width: 640px) {
+            .page-frame {
+                padding: 20px;
+            }
+            .report-card {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-frame">
+        <section class="report-card">
+            <header>
+                <h1 class="report-title">Saved Medico-Legal Report</h1>
+                <h2>{{ exam_date }}</h2>
+            </header>
+            <div class="drawing-frame">
+                <img src="{{ drawing_base64 }}" alt="Saved anatomical drawing">
+            </div>
+            <p class="note">This page displays the stored anatomical drawing for the medico-legal report. If the image does not appear, confirm that the stored Base64 string starts with <code>data:image/png;base64,</code>.</p>
+        </section>
+    </div>
+</body>
+</html>

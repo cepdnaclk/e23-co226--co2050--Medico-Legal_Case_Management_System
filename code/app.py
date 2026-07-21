@@ -1,4 +1,5 @@
 import os
+import json
 from datetime import datetime
 from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, session, flash, send_from_directory
@@ -7,6 +8,9 @@ from werkzeug.utils import secure_filename
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import uuid # Used to generate unique random names for files
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = 'your_super_secret_key' # Required for session management
@@ -27,20 +31,38 @@ def allowed_file(filename):
 
 # Database connection configuration
 # --- SUPABASE CONNECTION SETUP ---
-DB_HOST = "aws-1-ap-southeast-2.pooler.supabase.com" # Replace with your Supabase Host
-DB_NAME = "postgres"
-DB_USER = "postgres.wutuohcipwrsxyjgbaxd" # Replace with your Supabase User
-DB_PASSWORD = "H$g2OO41113" # Use the password you created for Supabase, NOT your old local password
-DB_PORT = "5432" # Or 5432 depending on your string
+DB_HOST = os.getenv('DB_HOST')
+DB_NAME = os.getenv('DB_NAME')
+DB_USER = os.getenv('DB_USER')
+DB_PASSWORD = os.getenv('DB_PASSWORD')
+DB_PORT = os.getenv('DB_PORT', '5432')
 
 def get_db_connection():
-    return psycopg2.connect(
-        host=DB_HOST,
-        database=DB_NAME,
-        user=DB_USER,
-        password=DB_PASSWORD,
-        port=DB_PORT
-    )
+    missing = [name for name, value in (
+        ('DB_HOST', DB_HOST),
+        ('DB_NAME', DB_NAME),
+        ('DB_USER', DB_USER),
+        ('DB_PASSWORD', DB_PASSWORD),
+    ) if not value]
+    if missing:
+        error_message = f"Missing database configuration values: {', '.join(missing)}"
+        app.logger.error(error_message)
+        raise RuntimeError(error_message)
+
+    try:
+        return psycopg2.connect(
+            host=DB_HOST,
+            database=DB_NAME,
+            user=DB_USER,
+            password=DB_PASSWORD,
+            port=DB_PORT
+        )
+    except psycopg2.OperationalError as err:
+        app.logger.error(f"Database connection failed: {err}")
+        raise
+    except Exception as err:
+        app.logger.error(f"Unexpected error creating database connection: {err}")
+        raise
 
 def log_action(user_id, action_description):
     """Utility function to easily record system events."""
@@ -93,6 +115,134 @@ def role_required(*roles):
             return redirect(url_for('dashboard'))
         return decorated_function
     return decorator
+
+@app.route('/view_mlef/<int:case_id>')
+@login_required
+def view_mlef(case_id):
+    conn = None
+    cursor = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor.execute("SELECT summary FROM medical_report WHERE caseid = %s", (case_id,))
+        row = cursor.fetchone()
+
+        if not row or not row.get('summary'):
+            flash('No saved MLEF drawing found for this case.')
+            return redirect(url_for('dashboard'))
+
+        try:
+            summary_data = json.loads(row['summary'])
+        except json.JSONDecodeError:
+            flash('Saved MLEF data is corrupt or invalid.')
+            return redirect(url_for('dashboard'))
+
+        anatomical_drawing = summary_data.get('anatomical_drawing', '')
+        exam_date = summary_data.get('exam_date', '')
+
+        return render_template(
+            'view_mlef.html',
+            case_id=case_id,
+            anatomical_drawing=anatomical_drawing,
+            exam_date=exam_date
+        )
+    except psycopg2.Error as err:
+        app.logger.error(f"Error loading MLEF view for case {case_id}: {err}")
+        flash('Unable to load the saved MLEF drawing.')
+        return redirect(url_for('dashboard'))
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if conn is not None:
+            conn.close()
+
+@app.route('/save_mlef', methods=['POST'])
+@login_required
+def save_mlef():
+    payload = request.get_json(silent=True)
+    if not payload:
+        return {'error': 'Invalid JSON payload.'}, 400
+
+    case_id = payload.get('case_id')
+    exam_date = payload.get('exam_date')
+    anatomical_drawing = payload.get('anatomical_drawing')
+
+    if not isinstance(case_id, int) or case_id <= 0:
+        return {'error': 'Invalid case_id; must be a positive integer.'}, 400
+
+    try:
+        datetime.strptime(exam_date, '%Y-%m-%d')
+    except (ValueError, TypeError):
+        return {'error': 'Invalid exam_date; expected YYYY-MM-DD.'}, 400
+
+    if not isinstance(anatomical_drawing, str) or not anatomical_drawing.startswith('data:image/png;base64,'):
+        return {'error': 'Invalid anatomical_drawing; must start with data:image/png;base64,.'}, 400
+
+    conn = None
+    cursor = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO medical_report (caseid, summary) VALUES (%s, %s) "
+            "ON CONFLICT (caseid) DO UPDATE SET summary = EXCLUDED.summary",
+            (case_id, json.dumps({'exam_date': exam_date, 'anatomical_drawing': anatomical_drawing}))
+        )
+        conn.commit()
+        return {'success': True, 'case_id': case_id}, 200
+    except psycopg2.Error as err:
+        if conn is not None:
+            conn.rollback()
+        app.logger.error(f"Failed to save MLEF for case {case_id}: {err}")
+        return {'error': 'Database error saving MLEF.'}, 500
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if conn is not None:
+            conn.close()
+
+@app.route('/saved_medico_legal_report/<int:case_id>')
+@login_required
+def saved_medico_legal_report(case_id):
+    if session.get('role') not in ['Doctor', 'JMO', 'Admin']:
+        flash('Access denied: Saved medico-legal reports are only available to medical staff.')
+        return redirect(url_for('dashboard'))
+
+    conn = None
+    cursor = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor.execute("SELECT summary FROM medical_report WHERE caseid = %s", (case_id,))
+        row = cursor.fetchone()
+
+        if not row or not row.get('summary'):
+            flash('No saved medico-legal report found for this case.')
+            return redirect(url_for('view_cases'))
+
+        try:
+            summary_data = json.loads(row['summary'])
+        except json.JSONDecodeError:
+            flash('Saved medico-legal report data is invalid.')
+            return redirect(url_for('view_cases'))
+
+        drawing_base64 = summary_data.get('anatomical_drawing', '')
+        exam_date = summary_data.get('exam_date', '')
+
+        return render_template(
+            'saved_medico_legal_report.html',
+            exam_date=exam_date,
+            drawing_base64=drawing_base64
+        )
+    except psycopg2.Error as err:
+        app.logger.error(f"Error loading saved medico-legal report for case {case_id}: {err}")
+        flash('Unable to load the saved medico-legal report at this time.')
+        return redirect(url_for('view_cases'))
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if conn is not None:
+            conn.close()
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -319,6 +469,14 @@ def create_case():
         role=session['role']
     )
 
+@app.route('/mlef_form')
+@login_required
+def mlef_form():
+    if session.get('role') not in ['Doctor', 'JMO', 'Admin']:
+        flash('Access denied: MLEF form is only available to medical staff.')
+        return redirect(url_for('dashboard'))
+    return render_template('mlef_form.html')
+
 @app.route('/view_cases', methods=['GET'])
 @login_required
 def view_cases():
@@ -360,6 +518,14 @@ def view_cases():
     conn.close()
     
     return render_template('view_cases.html', cases=cases, search_query=search_query, current_user_id=session.get('staff_id') or session.get('userid'), role=session['role'])
+
+@app.route('/doctor_dashboard')
+@login_required
+def doctor_dashboard():
+    if session.get('role') not in ['Doctor', 'JMO', 'Admin']:
+        flash('Access denied: Doctor dashboard is reserved for medical staff.')
+        return redirect(url_for('dashboard'))
+    return redirect(url_for('view_cases'))
 
 @app.route('/update_case_status', methods=['POST'])
 def update_case_status():

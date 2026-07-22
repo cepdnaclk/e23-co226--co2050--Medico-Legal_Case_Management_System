@@ -128,28 +128,34 @@ def view_mlef(case_id):
         row = cursor.fetchone()
 
         if not row or not row.get('summary'):
-            flash('No saved MLEF drawing found for this case.')
-            return redirect(url_for('dashboard'))
+            flash('No saved MLEF data found for this case.')
+            return redirect(url_for('view_cases'))
 
         try:
-            summary_data = json.loads(row['summary'])
+            mlef_data = json.loads(row['summary'])
         except json.JSONDecodeError:
             flash('Saved MLEF data is corrupt or invalid.')
-            return redirect(url_for('dashboard'))
+            return redirect(url_for('view_cases'))
 
-        anatomical_drawing = summary_data.get('anatomical_drawing', '')
-        exam_date = summary_data.get('exam_date', '')
+        cursor.execute("""
+            SELECT p.fullname AS patientname
+            FROM medicolegalcase m
+            LEFT JOIN patient p ON m.patientid = p.patientid
+            WHERE m.caseid = %s
+        """, (case_id,))
+        case_row = cursor.fetchone()
+        patient_name = case_row['patientname'] if case_row else 'Unknown'
 
         return render_template(
             'view_mlef.html',
             case_id=case_id,
-            anatomical_drawing=anatomical_drawing,
-            exam_date=exam_date
+            patient_name=patient_name,
+            mlef=mlef_data
         )
     except psycopg2.Error as err:
         app.logger.error(f"Error loading MLEF view for case {case_id}: {err}")
-        flash('Unable to load the saved MLEF drawing.')
-        return redirect(url_for('dashboard'))
+        flash('Unable to load the saved MLEF data.')
+        return redirect(url_for('view_cases'))
     finally:
         if cursor is not None:
             cursor.close()
@@ -164,19 +170,30 @@ def save_mlef():
         return {'error': 'Invalid JSON payload.'}, 400
 
     case_id = payload.get('case_id')
-    exam_date = payload.get('exam_date')
-    anatomical_drawing = payload.get('anatomical_drawing')
-
     if not isinstance(case_id, int) or case_id <= 0:
         return {'error': 'Invalid case_id; must be a positive integer.'}, 400
 
-    try:
-        datetime.strptime(exam_date, '%Y-%m-%d')
-    except (ValueError, TypeError):
-        return {'error': 'Invalid exam_date; expected YYYY-MM-DD.'}, 400
-
-    if not isinstance(anatomical_drawing, str) or not anatomical_drawing.startswith('data:image/png;base64,'):
-        return {'error': 'Invalid anatomical_drawing; must start with data:image/png;base64,.'}, 400
+    mlef_data = {
+        'exam_date_time_place': payload.get('exam_date_time_place', ''),
+        'date_of_birth': payload.get('date_of_birth', ''),
+        'age': payload.get('age', ''),
+        'identification_no': payload.get('identification_no', ''),
+        'police_station': payload.get('police_station', ''),
+        'date_of_issue': payload.get('date_of_issue', ''),
+        'mlef_number': payload.get('mlef_number', ''),
+        'examinee_name_address': payload.get('examinee_name_address', ''),
+        'sex': payload.get('sex', ''),
+        'police_age': payload.get('police_age', ''),
+        'reason_for_examination': payload.get('reason_for_examination', ''),
+        'produced_by': payload.get('produced_by', ''),
+        'internal_injuries': payload.get('internal_injuries', ''),
+        'bodily_harm': payload.get('bodily_harm', {}),
+        'causative_weapon': payload.get('causative_weapon', {}),
+        'category_of_hurt': payload.get('category_of_hurt', {}),
+        'anatomical_drawing': payload.get('anatomical_drawing', ''),
+        'saved_by': session.get('username', ''),
+        'saved_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+    }
 
     conn = None
     cursor = None
@@ -186,9 +203,10 @@ def save_mlef():
         cursor.execute(
             "INSERT INTO medical_report (caseid, summary) VALUES (%s, %s) "
             "ON CONFLICT (caseid) DO UPDATE SET summary = EXCLUDED.summary",
-            (case_id, json.dumps({'exam_date': exam_date, 'anatomical_drawing': anatomical_drawing}))
+            (case_id, json.dumps(mlef_data))
         )
         conn.commit()
+        log_action(session.get('id'), f"Saved MLEF form for case {case_id}")
         return {'success': True, 'case_id': case_id}, 200
     except psycopg2.Error as err:
         if conn is not None:
@@ -227,7 +245,7 @@ def saved_medico_legal_report(case_id):
             return redirect(url_for('view_cases'))
 
         drawing_base64 = summary_data.get('anatomical_drawing', '')
-        exam_date = summary_data.get('exam_date', '')
+        exam_date = summary_data.get('exam_date_time_place', summary_data.get('exam_date', ''))
 
         return render_template(
             'saved_medico_legal_report.html',
@@ -475,7 +493,23 @@ def mlef_form():
     if session.get('role') not in ['Doctor', 'JMO', 'Admin']:
         flash('Access denied: MLEF form is only available to medical staff.')
         return redirect(url_for('dashboard'))
-    return render_template('mlef_form.html')
+
+    conn = get_db_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    cursor.execute("""
+        SELECT m.caseid, p.fullname AS patientname
+        FROM medicolegalcase m
+        LEFT JOIN patient p ON m.patientid = p.patientid
+        JOIN casestatus cs ON m.statusid = cs.statusid
+        WHERE cs.statusname != 'Closed'
+        ORDER BY m.caseid
+    """)
+    cases = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    selected_case_id = request.args.get('case_id', type=int)
+    return render_template('mlef_form.html', cases=cases, selected_case_id=selected_case_id)
 
 @app.route('/view_cases', methods=['GET'])
 @login_required

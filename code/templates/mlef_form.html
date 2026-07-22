@@ -4,6 +4,39 @@
     <meta charset="UTF-8">
     <title>Medico-Legal Examination Form (MLEF)</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/mlef_style.css') }}">
+    <style>
+        .case-selector {
+            background: #f0f4ff;
+            border: 2px solid #4a90e2;
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .case-selector label {
+            font-weight: bold;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+        .case-selector select {
+            flex: 1;
+            padding: 8px 12px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .flash-msg {
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+        .flash-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .flash-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .span-2 { grid-column: span 2; }
+    </style>
 </head>
 <body>
 
@@ -12,18 +45,38 @@
         <h2>Medico - Legal Examination Form (MLEF)</h2>
     </div>
 
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for msg in messages %}
+                <div class="flash-msg flash-success">{{ msg }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="case-selector">
+        <label for="case_id">Select Case:</label>
+        <select id="case_id" name="case_id" required>
+            <option value="">-- Choose a Case --</option>
+            {% for case in cases %}
+                <option value="{{ case.caseid }}" {% if selected_case_id == case.caseid %}selected{% endif %}>
+                    CR-{{ "%05d"|format(case.caseid) }} — {{ case.patientname }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
     <div class="mlef-grid">
-        
+
         <!-- ================= LEFT COLUMN ================= -->
         <div class="col-left">
             <div class="box section-title">MEDICAL OFFICER'S NOTE</div>
             <div class="box tall-box">
                 <label>Date, Time and Place of Examination:</label>
-                <textarea></textarea>
+                <textarea name="exam_date_time_place"></textarea>
             </div>
             <div class="box split-box">
-                <div><label>Date of Birth:</label><input type="date"></div>
-                <div><label>Age:</label><input type="text"></div>
+                <div><label>Date of Birth:</label><input type="date" name="date_of_birth"></div>
+                <div><label>Age:</label><input type="text" name="age"></div>
             </div>
             <div class="box signature-box">
                 <label>Consent of the examinee:</label>
@@ -31,7 +84,7 @@
             </div>
             <div class="box">
                 <label>Identification (N.I.C. No. / Passport No.):</label>
-                <input type="text">
+                <input type="text" name="identification_no">
             </div>
             <div class="box thumb-box">
                 <label>Thumb imprint</label>
@@ -49,56 +102,56 @@
         <div class="col-mid">
             <div class="part-header">Part A (1-8) To be filled by Police Officer issuing MLEF</div>
             <div class="box-grid-2">
-                <div class="box"><label>1. Police Station:</label><input type="text"></div>
-                <div class="box"><label>2. Date of Issue:</label><input type="date"></div>
-                <div class="box"><label>3. No:</label><input type="text"></div>
+                <div class="box"><label>1. Police Station:</label><input type="text" name="police_station"></div>
+                <div class="box"><label>2. Date of Issue:</label><input type="date" name="date_of_issue"></div>
+                <div class="box"><label>3. No:</label><input type="text" name="mlef_number"></div>
             </div>
-            <div class="box"><label>4. Full Name and Address of the examinee:</label><input type="text"></div>
+            <div class="box"><label>4. Full Name and Address of the examinee:</label><input type="text" name="examinee_name_address"></div>
             <div class="box-grid-3">
-                <div class="box span-2"><label>7. Reason for referring for examination:</label><input type="text"></div>
-                <div class="box"><label>5. Sex:</label><input type="text" style="width: 30px;"> <label>6. Age:</label><input type="text" style="width: 30px;"></div>
+                <div class="box span-2"><label>7. Reason for referring for examination:</label><input type="text" name="reason_for_examination"></div>
+                <div class="box"><label>5. Sex:</label><input type="text" name="sex" style="width: 30px;"> <label>6. Age:</label><input type="text" name="police_age" style="width: 30px;"></div>
             </div>
-            
+
             <div class="part-header" style="margin-top: 10px;">Part B (9-22) To be filled by Medical Officer</div>
-            <div class="box"><label>9. Produced by:</label><input type="text"></div>
-            
+            <div class="box"><label>9. Produced by:</label><input type="text" name="produced_by"></div>
+
             <!-- Checkbox Matrix for Section 13 -->
             <div class="box mt-5">
                 <label>13. Nature of the bodily harm:</label>
                 <div class="checkbox-matrix">
-                    <label><input type="checkbox"> Contusion</label>
-                    <label><input type="checkbox"> Fracture</label>
-                    <label><input type="checkbox"> Stab</label>
-                    <label><input type="checkbox"> Cut</label>
-                    <label><input type="checkbox"> Dislocation</label>
-                    <label><input type="checkbox"> Burns</label>
-                    <label><input type="checkbox"> Laceration</label>
-                    <label><input type="checkbox"> Firearm inj.</label>
-                    <label><input type="checkbox"> None</label>
-                    <label><input type="checkbox"> Bite</label>
-                    <label><input type="checkbox"> Explosive inj.</label>
+                    <label><input type="checkbox" name="harm_contusion"> Contusion</label>
+                    <label><input type="checkbox" name="harm_fracture"> Fracture</label>
+                    <label><input type="checkbox" name="harm_stab"> Stab</label>
+                    <label><input type="checkbox" name="harm_cut"> Cut</label>
+                    <label><input type="checkbox" name="harm_dislocation"> Dislocation</label>
+                    <label><input type="checkbox" name="harm_burns"> Burns</label>
+                    <label><input type="checkbox" name="harm_laceration"> Laceration</label>
+                    <label><input type="checkbox" name="harm_firearm"> Firearm inj.</label>
+                    <label><input type="checkbox" name="harm_none"> None</label>
+                    <label><input type="checkbox" name="harm_bite"> Bite</label>
+                    <label><input type="checkbox" name="harm_explosive"> Explosive inj.</label>
                 </div>
-                <label class="mt-5">Internal Injuries:</label><input type="text" style="width: 100%;">
+                <label class="mt-5">Internal Injuries:</label><input type="text" name="internal_injuries" style="width: 100%;">
             </div>
 
             <!-- Checkbox Matrix for Section 14 -->
             <div class="box mt-5">
                 <label>14. Nature of Causative Weapon:</label>
                 <div class="checkbox-matrix">
-                    <label><input type="checkbox"> Blunt</label>
-                    <label><input type="checkbox"> Sharp</label>
-                    <label><input type="checkbox"> Firearm</label>
-                    <label><input type="checkbox"> Explosive devices</label>
-                    <label><input type="checkbox"> Others</label>
+                    <label><input type="checkbox" name="weapon_blunt"> Blunt</label>
+                    <label><input type="checkbox" name="weapon_sharp"> Sharp</label>
+                    <label><input type="checkbox" name="weapon_firearm"> Firearm</label>
+                    <label><input type="checkbox" name="weapon_explosive"> Explosive devices</label>
+                    <label><input type="checkbox" name="weapon_others"> Others</label>
                 </div>
             </div>
 
             <div class="box mt-5">
                 <label>15. Category of Hurt:</label>
                 <div class="checkbox-matrix">
-                    <label><input type="checkbox"> Non-grievous</label>
-                    <label><input type="checkbox"> Grievous</label>
-                    <label><input type="checkbox"> Fatal in ordinary course of nature</label>
+                    <label><input type="checkbox" name="hurt_non_grievous"> Non-grievous</label>
+                    <label><input type="checkbox" name="hurt_grievous"> Grievous</label>
+                    <label><input type="checkbox" name="hurt_fatal"> Fatal in ordinary course of nature</label>
                 </div>
             </div>
         </div>
@@ -109,8 +162,6 @@
                 <button type="button" id="clearBtn">Clear Drawing</button>
                 <button type="button" id="saveDrawingBtn">Save Image</button>
             </div>
-            <!-- The canvas where the doctor draws. 
-                 Replace the background-image in CSS with your actual anatomical diagram -->
             <canvas id="anatomicalCanvas" width="400" height="800"></canvas>
             <div class="action-panel">
                 <button type="button" id="saveFormBtn">Save Form</button>

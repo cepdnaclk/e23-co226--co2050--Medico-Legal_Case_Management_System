@@ -235,6 +235,11 @@
                     <a href="{{ url_for('court_report', case_id=case.caseid) }}" class="btn-report" target="_blank">
                         Generate Court Report
                     </a>
+                    {% if role in ['Doctor', 'JMO', 'Admin'] %}
+                    <a href="{{ url_for('mlef_form', case_id=case.caseid) }}" class="btn-report" style="color: #f39c12; border-color: #f39c12;">
+                        Fill MLEF
+                    </a>
+                    {% endif %}
                     <a href="{{ url_for('view_mlef', case_id=case.caseid) }}" class="btn-report">
                         View MLEF
                     </a>

@@ -40,23 +40,47 @@
             color: #475569;
             font-size: 1rem;
         }
+        
+        /* UPDATED: Centered container for the drawing */
         .drawing-frame {
-            display: grid;
-            gap: 20px;
-        }
-        .drawing-frame img {
-            width: 100%;
-            height: auto;
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            background: #f8fafc;
             border-radius: 18px;
             border: 1px solid #dbeafe;
-            background: #f8fafc;
+            padding: 20px;
         }
+
+        /* NEW: Layered Drawing Styles */
+        .layered-drawing {
+            position: relative;
+            display: inline-block;
+            width: 400px; /* Keeps scaling identical to the canvas width */
+            max-width: 100%;
+        }
+        .layered-drawing .bg-image {
+            display: block;
+            width: 100%;
+            height: auto;
+            z-index: 1;
+        }
+        .layered-drawing .annotation-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+        }
+
         .note {
             margin-top: 20px;
             color: #64748b;
             font-size: 0.95rem;
             line-height: 1.6;
         }
+        
         @media (max-width: 640px) {
             .page-frame {
                 padding: 20px;
@@ -74,10 +98,19 @@
                 <h1 class="report-title">Saved Medico-Legal Report</h1>
                 <h2>{{ exam_date }}</h2>
             </header>
+            
+            <!-- UPDATED: Stacked Image Container -->
             <div class="drawing-frame">
-                <img src="{{ drawing_base64 }}" alt="Saved anatomical drawing">
+                <div class="layered-drawing">
+                    <!-- Bottom Layer: The Body Map Placeholder -->
+                    <img src="{{ url_for('static', filename='img/body_map_placeholder.png') }}" class="bg-image" alt="Body Map Placeholder">
+                    
+                    <!-- Top Layer: The Transparent Doctor Annotations -->
+                    <img src="{{ drawing_base64 }}" class="annotation-image" alt="Saved anatomical drawing annotations">
+                </div>
             </div>
-            <p class="note">This page displays the stored anatomical drawing for the medico-legal report. If the image does not appear, confirm that the stored Base64 string starts with <code>data:image/png;base64,</code>.</p>
+            
+            <p class="note">This page displays the stored anatomical drawing for the medico-legal report. If the annotations do not appear, confirm that the stored Base64 string starts with <code>data:image/png;base64,</code>.</p>
         </section>
     </div>
 </body>

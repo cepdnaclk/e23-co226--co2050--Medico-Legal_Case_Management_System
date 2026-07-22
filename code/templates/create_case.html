@@ -22,7 +22,7 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             width: 100%;
             max-width: 500px;
-            border-top: 4px solid #e67e22; /* Different color for visual distinction */
+            border-top: 4px solid #e67e22;
         }
         h2 {
             color: #2c3e50;
@@ -45,6 +45,12 @@
             border-radius: 4px;
             box-sizing: border-box;
             font-family: inherit;
+        }
+        /* Added a grid to put Name and Badge side-by-side for a cleaner look */
+        .officer-inputs {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 10px;
         }
         .btn-submit {
             width: 100%;
@@ -144,21 +150,33 @@
                 <input type="date" id="incident_date" name="incident_date" required>
             </div>
 
+            <!-- MODIFIED: Investigating Officer Text Inputs -->
             <div class="form-group">
-                <label for="officerid">Investigating Officer</label>
-                <select id="officerid" name="officerid" required>
-                    <option value="">-- Choose an Officer --</option>
-                    {% for officer in officers %}
-                        <option value="{{ officer.officerid }}">{{ officer.fullname }} (Badge: {{ officer.badgenumber }})</option>
-                    {% endfor %}
-                </select>
+                <label>Investigating Officer Details</label>
+                <div class="officer-inputs">
+                    <input type="text" id="officer_name" name="officer_name" placeholder="Full Name (e.g. Sgt. Perera)" required>
+                    <input type="text" id="officer_badge" name="officer_badge" placeholder="Badge No.">
+                </div>
             </div>
 
+            <!-- EXPANDED: Incident Location Details -->
             <div class="form-group">
-                <label for="locationid">Police Station</label>
-                <select id="locationid" name="locationid" required>
+                <label>Incident Location Details</label>
+                <div style="display: grid; gap: 10px;">
+                    <input type="text" id="address" name="address" placeholder="Street Address or Landmark" required>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <input type="text" id="city" name="city" placeholder="City" required>
+                        <input type="text" id="province" name="province" placeholder="Province" required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- UNCHANGED: Police Station remains a dropdown -->
+            <div class="form-group">
+                <label for="stationid">Reporting Police Station</label>
+                <select id="stationid" name="stationid" required>
                     <option value="">-- Choose a Police Station --</option>
-                    {% for station in policestations %}
+                    {% for station in police_stations %}
                         <option value="{{ station.stationid }}">{{ station.stationname }}</option>
                     {% endfor %}
                 </select>

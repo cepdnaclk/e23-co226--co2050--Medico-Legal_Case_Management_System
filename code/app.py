@@ -412,80 +412,119 @@ def register_patient():
     return render_template('register_patient.html', role=session['role'])
 
 @app.route('/create_case', methods=['GET', 'POST'])
-@login_required
 def create_case():
-    if 'loggedin' not in session:
-        return redirect(url_for('login'))
-    
-    # Restrict to authorized roles
-    if session['role'] not in ['Admin', 'Doctor', 'JMO']:
-        flash("You do not have permission to manage cases.")
-        return redirect(url_for('dashboard'))
-
-    conn = get_db_connection()
-    cursor = conn.cursor(cursor_factory=RealDictCursor)
-
+    # ==========================================
+    # 1. HANDLING FORM SUBMISSION (POST)
+    # ==========================================
     if request.method == 'POST':
+        conn = None
+        cursor = None
         try:
-            patient_id = int(request.form['patient_id'])
-            case_type_id = int(request.form['casetypeid'])
-            status_id = int(request.form['statusid'])
-            assigned_doctor = int(request.form['assigneddoctor'])
-            officer_id = int(request.form['officerid'])
-            location_id = int(request.form.get('locationid', 0))
-            incident_date = request.form['incident_date']
-
+            # 1. Basic Case Details
+            patient_id = request.form.get('patient_id')
+            assigned_doctor = request.form.get('assigneddoctor')
+            casetype_id = request.form.get('casetypeid')
+            incident_date = request.form.get('incident_date')
+            status_id = request.form.get('statusid')
+            
+            # 2. Officer Details
+            officer_name = request.form.get('officer_name')
+            officer_badge = request.form.get('officer_badge')
+            station_id = request.form.get('stationid')
+            
+            # 3. NEW: Expanded Location Details
+            address = request.form.get('address')
+            city = request.form.get('city')
+            province = request.form.get('province')
+            
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            
+            # Step A: Insert Officer and get ID
             cursor.execute("""
-                INSERT INTO medicolegalcase (
-                    patientid, casetypeid, statusid, assigneddoctor, officerid, locationid, incidentdate
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s)
-            """, (patient_id, case_type_id, status_id, assigned_doctor, officer_id, location_id, incident_date))
+                INSERT INTO investigatingofficer (fullname, badgenumber) 
+                VALUES (%s, %s) 
+                RETURNING officerid;
+            """, (officer_name, officer_badge))
+            new_officer_id = cursor.fetchone()[0]
+
+            # Step B: Insert the full Location into the database and get its new ID
+            cursor.execute("""
+                INSERT INTO incidentlocation (address, city, province) 
+                VALUES (%s, %s, %s) 
+                RETURNING locationid;
+            """, (address, city, province))
+            new_location_id = cursor.fetchone()[0]
+
+            # Step C: Insert Case using both newly generated IDs
+            cursor.execute("""
+                INSERT INTO medicolegalcase (patientid, assigneddoctor, casetypeid, incidentdate, locationid, stationid, statusid, officerid) 
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """, (patient_id, assigned_doctor, casetype_id, incident_date, new_location_id, station_id, status_id, new_officer_id))
+
             conn.commit()
-            log_action(session['id'], "Created a new medico-legal case.")
-            flash('Medico-Legal Case created successfully!')
-        except (ValueError, psycopg2.Error) as err:
-            flash(f'Database Error: {err}')
+            flash("Case successfully created!", "success")
+            return redirect(url_for('dashboard'))
+            
+        except Exception as e:
+            print(f"--- CRITICAL POST ERROR: {e} ---")
+            if conn:
+                conn.rollback() 
+            flash("An error occurred while creating the case.", "error")
+            return redirect(url_for('create_case'))
+            
+        finally:
+            if cursor is not None:
+                cursor.close()
+            if conn is not None:
+                conn.close()
+
+    # ==========================================
+    # 2. HANDLING PAGE LOAD (GET)
+    # ==========================================
+    conn = None
+    cursor = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor) 
+
+        cursor.execute("SELECT patientid, fullname FROM patient")
+        patients = cursor.fetchall()
+
+        cursor.execute("""
+            SELECT staff.staffid, staff.fullname, role.rolename AS role 
+            FROM staff 
+            JOIN role ON staff.roleid = role.roleid 
+            WHERE role.rolename IN ('Doctor', 'JMO')
+        """)
+        doctors = cursor.fetchall()
+
+        cursor.execute("SELECT casetypeid, casetypename FROM casetype")
+        case_types = cursor.fetchall()
         
-        cursor.close()
-        conn.close()
-        return redirect(url_for('create_case'))
+        cursor.execute("SELECT statusid, statusname FROM casestatus") 
+        case_statuses = cursor.fetchall()
 
-    # For GET requests: Fetch data for the dropdown menus
-    cursor.execute("SELECT patientid, fullname FROM patient")
-    patients = cursor.fetchall()
+        cursor.execute("SELECT stationid, stationname FROM policestation")
+        police_stations = cursor.fetchall()
 
-    cursor.execute("""
-        SELECT s.staffid, s.fullname
-        FROM staff s
-        JOIN role r ON s.roleid = r.roleid
-        WHERE r.rolename IN ('Doctor', 'JMO')
-    """)
-    doctors = cursor.fetchall()
+        return render_template('create_case.html', 
+                               patients=patients, 
+                               doctors=doctors, 
+                               case_types=case_types, 
+                               police_stations=police_stations, 
+                               case_statuses=case_statuses)
 
-    cursor.execute("SELECT casetypeid, casetypename FROM casetype")
-    case_types = cursor.fetchall()
-
-    cursor.execute("SELECT statusid, statusname FROM casestatus")
-    case_statuses = cursor.fetchall()
-
-    cursor.execute("SELECT officerid, fullname, badgenumber FROM investigatingofficer")
-    officers = cursor.fetchall()
-
-    cursor.execute("SELECT stationid, stationname FROM policestation")
-    policestations = cursor.fetchall()
-
-    cursor.close()
-    conn.close()
-    return render_template(
-        'create_case.html',
-        patients=patients,
-        doctors=doctors,
-        case_types=case_types,
-        case_statuses=case_statuses,
-        officers=officers,
-        policestations=policestations,
-        role=session['role']
-    )
+    except Exception as e:
+        print(f"--- CRITICAL GET ERROR: {e} ---")
+        flash("Could not load form data.", "error")
+        return redirect(url_for('dashboard'))
+        
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if conn is not None:
+            conn.close()
 
 @app.route('/mlef_form')
 @login_required
@@ -1313,22 +1352,34 @@ def court_report(case_id):
     
     try:
         is_admin = session.get('role') == 'Admin' or str(session.get('roleid')) == '1'
+        
         if is_admin:
             cursor.execute("""
-                SELECT c.caseid, c.casetype, c.incidentdate, c.policestation, c.casestatus, c.assignedjmo, 
-                       s.fullname AS jmoname, s.role AS jmorole
+                SELECT c.caseid, ct.casetypename AS casetype, c.incidentdate, 
+                       ps.stationname AS policestation, cs.statusname AS casestatus, 
+                       c.assigneddoctor, s.fullname AS jmoname, r.rolename AS jmorole
                 FROM medicolegalcase c
-                LEFT JOIN staff s ON c.assignedjmo = s.staffid
+                LEFT JOIN staff s ON c.assigneddoctor = s.staffid
+                LEFT JOIN role r ON s.roleid = r.roleid
+                LEFT JOIN casetype ct ON c.casetypeid = ct.casetypeid
+                LEFT JOIN policestation ps ON c.stationid = ps.stationid
+                LEFT JOIN casestatus cs ON c.statusid = cs.statusid
                 WHERE c.caseid = %s
             """, (case_id,))
         else:
             cursor.execute("""
-                SELECT c.caseid, c.casetype, c.incidentdate, c.policestation, c.casestatus, c.assignedjmo, 
-                       s.fullname AS jmoname, s.role AS jmorole
+                SELECT c.caseid, ct.casetypename AS casetype, c.incidentdate, 
+                       ps.stationname AS policestation, cs.statusname AS casestatus, 
+                       c.assigneddoctor, s.fullname AS jmoname, r.rolename AS jmorole
                 FROM medicolegalcase c
-                LEFT JOIN staff s ON c.assignedjmo = s.staffid
+                LEFT JOIN staff s ON c.assigneddoctor = s.staffid
+                LEFT JOIN role r ON s.roleid = r.roleid
+                LEFT JOIN casetype ct ON c.casetypeid = ct.casetypeid
+                LEFT JOIN policestation ps ON c.stationid = ps.stationid
+                LEFT JOIN casestatus cs ON c.statusid = cs.statusid
                 WHERE c.caseid = %s AND c.assigneddoctor = %s
             """, (case_id, session.get('staff_id') or session.get('userid')))
+            
         case = cursor.fetchone()
         
         if not case:
@@ -1336,7 +1387,6 @@ def court_report(case_id):
             return redirect(url_for('dashboard'))
 
         # 2. Fetch the associated Patient/Victim Demographics
-        # We need another query to get patient info using the case's patientid
         cursor.execute("""
             SELECT p.* FROM patient p
             JOIN medicolegalcase c ON p.patientid = c.patientid
@@ -1363,6 +1413,7 @@ def court_report(case_id):
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     return render_template('court_report.html', case=case, patient=patient, evidence=evidence_items, current_time=current_time)
+
 
 if __name__ == '__main__':
     app.run(debug=True)

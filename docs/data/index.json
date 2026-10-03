@@ -1,20 +1,20 @@
 {
     "team": [
         {
-            "name": "P.H.S. Gunawardhana",
-            "email": "e23122@eng.pdn.ac.lk",
-            "eNumber": "E/23/122"
-        },
-        {
             "name": "M.T. Dineth",
             "email": "e23076@eng.pdn.ac.lk",
             "eNumber": "E/23/076"
         },
         {
+            "name": "P.H.S. Gunawardhana",
+            "email": "e23122@eng.pdn.ac.lk",
+            "eNumber": "E/23/122"
+        },
+        {
             "name": "G.C. Damsiluni",
             "email": "e23050@eng.pdn.ac.lk",
             "eNumber": "E/23/050"
-        }
+        },
          {
             "name": "M.A.S. Dulashara",
             "email": "e23089@eng.pdn.ac.lk",
@@ -23,12 +23,8 @@
     ],
     "supervisors": [
         {
-            "name": "Dr. Supervisor 1",
-            "email": "email@eng.pdn.ac.lk"
-        },
-        {
-            "name": "Supervisor 2",
-            "email": "email@eng.pdn.ac.lk"
+            "name": "Mr. Biswajith Dissanayake",
+            "email": "biswajithd@eng.pdn.ac.lk"
         }
     ],
     "tags": []

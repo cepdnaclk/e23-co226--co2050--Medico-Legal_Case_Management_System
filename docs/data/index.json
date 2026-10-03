@@ -1,4 +1,5 @@
 {
+    "title": "Medico-Legal_Case_Management_System",
     "team": [
         {
             "name": "M.T. Dineth",
@@ -20,6 +21,7 @@
             "email": "e23089@eng.pdn.ac.lk",
             "eNumber": "E/23/089"
         }
+         
     ],
     "supervisors": [
         {
@@ -27,5 +29,13 @@
             "email": "biswajithd@eng.pdn.ac.lk"
         }
     ],
-    "tags": []
+    "tags": [
+        "Web Application",
+        "Software Systems Development",
+        "database-system",
+        "legal-system",
+        "Medical"
+    ],
+    "image": "cover_page.jpg",
+    "thumbnail": "thumbnail.jpg"
 }

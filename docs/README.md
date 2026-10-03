@@ -12,8 +12,8 @@ title: Medico-Legal Case Management System
 ---
 
 ## Team
--  E23122, P.H.S. Gunawardhana, [e23122@eng.pdn.ac.lk](mailto:e23122@eng.pdn.ac.lk)
 -  E23076, M.T. Dineth, [e23076@eng.pdn.ac.lk](mailto:e23076@eng.pdn.ac.lk)
+-  E23122, P.H.S. Gunawardhana, [e23122@eng.pdn.ac.lk](mailto:e23122@eng.pdn.ac.lk)
 -  E23050, G.C. Damsiluni, [e23050@eng.pdn.ac.lk](mailto:e23050@eng.pdn.ac.lk)
 -  E23089, M.A.S. Dulashara, [e23089@eng.pdn.ac.lk](mailto:e23089@eng.pdn.ac.lk)
 

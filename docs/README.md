@@ -80,7 +80,7 @@ Security was woven directly into the code and database engine layers rather than
 
 ## Links
 
-- [Project Repository](https://github.com/cepdnaclk/{{ page.repository-name }}){:target="_blank"}
-- [Project Page](https://cepdnaclk.github.io/{{ page.repository-name}}){:target="_blank"}
+- [Project Repository](https://github.com/cepdnaclk/e23-co226--co2050--Medico-Legal_Case_Management_System)
+- [Project Page](https://cepdnaclk.github.io/e23-co226--co2050--Medico-Legal_Case_Management_System)
 - [Department of Computer Engineering](http://www.ce.pdn.ac.lk/)
 - [University of Peradeniya](https://eng.pdn.ac.lk/)

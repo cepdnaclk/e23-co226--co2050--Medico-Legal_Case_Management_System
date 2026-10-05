@@ -3,7 +3,7 @@ layout: home
 permalink: index.html
 
 # Please update this with your repository name and title
-repository-name: e23-c02050-Medico-Legal_Case_Management_System
+repository-name: e23-co2050-Medico-Legal Case Management System
 title: Medico-Legal Case Management System
 ---
 
